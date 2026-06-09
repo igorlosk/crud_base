@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -34,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable("id") Long id){
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id){
         User user = dbUserService.getUserById(id);
         LOGGER.info("User get: {}", user);
         return ResponseEntity.ok(userToDtoMapper.toDto(user));
@@ -42,7 +44,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDto> updateUser(
-            @PathVariable("id") Long id,
+            @PathVariable Long id,
             @RequestBody @Valid UserDto userDto) {
         User user = dbUserService.updateUser(id, userDto);
         LOGGER.info("User updated: {}", user);
@@ -54,5 +56,14 @@ public class UserController {
         dbUserService.deleteUser(id);
         LOGGER.info("User deleted: {}", id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public List<UserDto> gelAllUsers (){
+        List<User> userList = dbUserService.getAllUsers();
+        return userList
+                .stream()
+                .map(userToDtoMapper::toDto)
+                .toList();
     }
 }

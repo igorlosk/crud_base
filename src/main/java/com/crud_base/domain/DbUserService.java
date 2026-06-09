@@ -6,6 +6,8 @@ import com.crud_base.db.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class DbUserService implements UserService {
 
@@ -37,7 +39,7 @@ public class DbUserService implements UserService {
     @Override
     public User updateUser(Long id, UserDto userDto) {
 
-        if(!userRepository.existsById(id)) {
+        if (!userRepository.existsById(id)) {
             throw new EntityNotFoundException("User with id " + id + " not found");
         }
 
@@ -65,5 +67,13 @@ public class DbUserService implements UserService {
         UserEntity userEntity = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
         userRepository.delete(userEntity);
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(userToEntityMapper::toDomain)
+                .toList();
     }
 }
