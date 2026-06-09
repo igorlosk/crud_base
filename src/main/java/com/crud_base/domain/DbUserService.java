@@ -1,9 +1,9 @@
 package com.crud_base.domain;
 
 import com.crud_base.api.UserDto;
-import com.crud_base.api.UserToDtoMapper;
 import com.crud_base.db.UserEntity;
 import com.crud_base.db.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,15 +11,12 @@ public class DbUserService implements UserService {
 
     private final UserToEntityMapper userToEntityMapper;
     private final UserRepository userRepository;
-    private final UserToDtoMapper userToDtoMapper;
 
     public DbUserService(
             UserToEntityMapper userToEntityMapper,
-            UserRepository userRepository,
-            UserToDtoMapper userToDtoMapper) {
+            UserRepository userRepository) {
         this.userToEntityMapper = userToEntityMapper;
         this.userRepository = userRepository;
-        this.userToDtoMapper = userToDtoMapper;
     }
 
     @Override
@@ -39,16 +36,34 @@ public class DbUserService implements UserService {
 
     @Override
     public User updateUser(Long id, UserDto userDto) {
-        return null;
+
+        if(!userRepository.existsById(id)) {
+            throw new EntityNotFoundException("User with id " + id + " not found");
+        }
+
+        userRepository.updateUser(
+                id,
+                userDto.username(),
+                userDto.surname(),
+                userDto.email(),
+                userDto.age()
+        );
+
+        return userToEntityMapper.toDomain(userRepository.findById(id).orElseThrow());
     }
 
     @Override
     public User getUserById(Long id) {
-        return null;
+        UserEntity userEntity = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+
+        return userToEntityMapper.toDomain(userEntity);
     }
 
     @Override
     public void deleteUser(Long id) {
-
+        UserEntity userEntity = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+        userRepository.delete(userEntity);
     }
 }

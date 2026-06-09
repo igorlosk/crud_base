@@ -1,19 +1,14 @@
 package com.crud_base.api;
 
-import com.crud_base.db.UserEntity;
 import com.crud_base.domain.DbUserService;
 import com.crud_base.domain.User;
-import com.crud_base.domain.UserService;
-import com.crud_base.domain.UserToEntityMapper;
+
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -36,5 +31,28 @@ public class UserController {
         User user = dbUserService.createUser(userDto);
         LOGGER.info("User created: {}", user);
         return ResponseEntity.status(HttpStatus.CREATED).body(userToDtoMapper.toDto(user));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable("id") Long id){
+        User user = dbUserService.getUserById(id);
+        LOGGER.info("User get: {}", user);
+        return ResponseEntity.ok(userToDtoMapper.toDto(user));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(
+            @PathVariable("id") Long id,
+            @RequestBody @Valid UserDto userDto) {
+        User user = dbUserService.updateUser(id, userDto);
+        LOGGER.info("User updated: {}", user);
+        return ResponseEntity.ok(userToDtoMapper.toDto(user));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUserById(@PathVariable("id") Long id){
+        dbUserService.deleteUser(id);
+        LOGGER.info("User deleted: {}", id);
+        return ResponseEntity.noContent().build();
     }
 }
