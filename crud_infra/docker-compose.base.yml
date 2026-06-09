@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: crud_base
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+
     ports:
       - "5432:5432"
     healthcheck:

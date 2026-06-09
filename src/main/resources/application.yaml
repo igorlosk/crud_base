@@ -16,4 +16,8 @@ spring:
     open-in-view: false
     show-sql: true
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui/index.html
+    url: /crud_base_openapi.yaml
 
