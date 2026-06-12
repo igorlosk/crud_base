@@ -19,14 +19,17 @@ public class UserController {
     private final DbUserService dbUserService;
     private final UserToDtoMapper userToDtoMapper;
     private final ManualCachingProductService manualCachingProductService;
+    private final SpringAnnotationCachingUserService springAnnotationCachingUserService;
 
     public UserController(
             DbUserService dbUserService,
             UserToDtoMapper userToDtoMapper,
-            ManualCachingProductService manualCachingProductService) {
+            ManualCachingProductService manualCachingProductService,
+            SpringAnnotationCachingUserService springAnnotationCachingUserService) {
         this.dbUserService = dbUserService;
         this.userToDtoMapper = userToDtoMapper;
         this.manualCachingProductService = manualCachingProductService;
+        this.springAnnotationCachingUserService = springAnnotationCachingUserService;
     }
 
     @PostMapping
@@ -86,6 +89,7 @@ public class UserController {
         return switch (cacheMode) {
             case NON_CACHE -> dbUserService;
             case MANUAL -> manualCachingProductService;
+            case SPRING -> springAnnotationCachingUserService;
         };
     }
 }

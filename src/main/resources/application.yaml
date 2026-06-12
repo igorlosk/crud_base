@@ -24,6 +24,8 @@ spring:
     redis:
       host: localhost
       port: 6379
+  cache:
+    type: redis
 #      host: ${spring.data.redis.host:localhost}
 #      port: ${spring.data.redis.port:6379}
 
