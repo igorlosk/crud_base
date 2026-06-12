@@ -66,6 +66,7 @@ public class ManualCachingProductService implements UserService{
         return userToEntityMapper.toDomain(userEntity);
     }
 
+
     @Override
     public void deleteUser(Long id) {
         LOGGER.info("Deleting User from DB: {}", id);
