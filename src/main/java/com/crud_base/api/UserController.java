@@ -31,14 +31,14 @@ public class UserController {
     public ResponseEntity<UserDto> createUser(
             @RequestBody @Valid UserDto userDto) {
         User user = dbUserService.createUser(userDto);
-        LOGGER.info("User created: {}", user);
+        LOGGER.info("User created with cacheMode={}", "none-cache");
         return ResponseEntity.status(HttpStatus.CREATED).body(userToDtoMapper.toDto(user));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id){
         User user = dbUserService.getUserById(id);
-        LOGGER.info("User get: {}", user);
+        LOGGER.info("Getting user id={} with cacheMode={}", id, "none-cache");
         return ResponseEntity.ok(userToDtoMapper.toDto(user));
     }
 
@@ -47,14 +47,14 @@ public class UserController {
             @PathVariable Long id,
             @RequestBody @Valid UserDto userDto) {
         User user = dbUserService.updateUser(id, userDto);
-        LOGGER.info("User updated: {}", user);
+        LOGGER.info("Update user id={} with casheMode={}", id, "none-cache");
         return ResponseEntity.ok(userToDtoMapper.toDto(user));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUserById(@PathVariable("id") Long id){
         dbUserService.deleteUser(id);
-        LOGGER.info("User deleted: {}", id);
+        LOGGER.info("Deleted user id={} with cacheMode={}", id, "none-cache");
         return ResponseEntity.noContent().build();
     }
 
