@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 public class DbUserService implements UserService {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ManualCachingProductService.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(DbUserService.class);
     private final UserToEntityMapper userToEntityMapper;
     private final UserRepository userRepository;
 
