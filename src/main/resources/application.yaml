@@ -28,7 +28,17 @@ spring:
 #      port: ${spring.data.redis.port:6379}
 
 springdoc:
+  api-docs:
+    enabled: true
   swagger-ui:
+    csrf:
+      enabled: true
     path: /swagger-ui/index.html
-    url: /crud_base_openapi.yaml
+
+#springdoc:
+#  api-docs:
+#    enabled: true
+#  swagger-ui:
+#    enabled: true
+#    path: /swagger-ui/index.html
 

@@ -1,7 +1,6 @@
 package com.crud_base.api;
 
-import com.crud_base.domain.DbUserService;
-import com.crud_base.domain.User;
+import com.crud_base.domain.*;
 
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -19,51 +18,74 @@ public class UserController {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserController.class);
     private final DbUserService dbUserService;
     private final UserToDtoMapper userToDtoMapper;
+    private final ManualCachingProductService manualCachingProductService;
 
     public UserController(
             DbUserService dbUserService,
-            UserToDtoMapper userToDtoMapper) {
+            UserToDtoMapper userToDtoMapper,
+            ManualCachingProductService manualCachingProductService) {
         this.dbUserService = dbUserService;
         this.userToDtoMapper = userToDtoMapper;
+        this.manualCachingProductService = manualCachingProductService;
     }
 
     @PostMapping
     public ResponseEntity<UserDto> createUser(
-            @RequestBody @Valid UserDto userDto) {
-        User user = dbUserService.createUser(userDto);
-        LOGGER.info("User created with cacheMode={}", "none-cache");
+            @RequestBody @Valid UserDto userDto,
+            @RequestParam(value = "cacheMode", defaultValue = "NON_CACHE") CacheMode cacheMode) {
+
+        UserService service = resolveProductService(cacheMode);
+
+        User user = service.createUser(userDto);
+        LOGGER.info("User created with cacheMode={}", cacheMode);
         return ResponseEntity.status(HttpStatus.CREATED).body(userToDtoMapper.toDto(user));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long id){
-        User user = dbUserService.getUserById(id);
-        LOGGER.info("Getting user id={} with cacheMode={}", id, "none-cache");
+    public ResponseEntity<UserDto> getUserById(
+            @PathVariable Long id,
+            @RequestParam(value = "cacheMode", defaultValue = "NON_CACHE") CacheMode cacheMode) {
+        UserService service = resolveProductService(cacheMode);
+        User user = service.getUserById(id);
+        LOGGER.info("Getting user id={} with cacheMode={}", id, cacheMode);
         return ResponseEntity.ok(userToDtoMapper.toDto(user));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable Long id,
-            @RequestBody @Valid UserDto userDto) {
-        User user = dbUserService.updateUser(id, userDto);
-        LOGGER.info("Update user id={} with casheMode={}", id, "none-cache");
+            @RequestBody @Valid UserDto userDto,
+            @RequestParam(value = "cacheMode", defaultValue = "NON_CACHE") CacheMode cacheMode) {
+        UserService service = resolveProductService(cacheMode);
+        User user = service.updateUser(id, userDto);
+        LOGGER.info("Update user id={} with casheMode={}", id, cacheMode);
         return ResponseEntity.ok(userToDtoMapper.toDto(user));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable("id") Long id){
-        dbUserService.deleteUser(id);
-        LOGGER.info("Deleted user id={} with cacheMode={}", id, "none-cache");
+    public ResponseEntity<Void> deleteUserById(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "cacheMode", defaultValue = "NON_CACHE") CacheMode cacheMode) {
+        UserService service = resolveProductService(cacheMode);
+        service.deleteUser(id);
+        LOGGER.info("Deleted user id={} with cacheMode={}", id, cacheMode);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public List<UserDto> gelAllUsers (){
+    public List<UserDto> gelAllUsers() {
         List<User> userList = dbUserService.getAllUsers();
         return userList
                 .stream()
                 .map(userToDtoMapper::toDto)
                 .toList();
+    }
+
+    private UserService resolveProductService(CacheMode cacheMode) {
+
+        return switch (cacheMode) {
+            case NON_CACHE -> dbUserService;
+            case MANUAL -> manualCachingProductService;
+        };
     }
 }
