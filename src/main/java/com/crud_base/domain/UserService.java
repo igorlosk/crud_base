@@ -1,8 +1,6 @@
 package com.crud_base.domain;
 
 import com.crud_base.api.UserDto;
-import com.crud_base.db.UserEntity;
-
 import java.util.List;
 
 public interface UserService {
