@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>User API Client</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .section { margin-bottom: 24px; border: 1px solid #ccc; padding: 16px; }
+        label { display: block; margin-top: 8px; font-weight: bold; }
+        input, select { width: 100%; max-width: 400px; padding: 6px; margin-top: 4px; }
+        button { margin-top: 12px; padding: 8px 16px; cursor: pointer; }
+        #response { margin-top: 20px; white-space: pre-wrap; background: #f5f5f5; padding: 12px; }
+    </style>
+</head>
+<body>
+<h1>REST API: /users (UserDto)</h1>
+
+<!-- CREATE -->
+<div class="section">
+    <h3>Создать пользователя (POST /users)</h3>
+    <label>Username (3–20 символов)</label>
+    <input type="text" id="createUsername" placeholder="Username" />
+    <label>Surname (3–20 символов)</label>
+    <input type="text" id="createSurname" placeholder="Фамилия" />
+    <label>Email</label>
+    <input type="email" id="createEmail" placeholder="Email" />
+    <label>Age (1–100)</label>
+    <input type="number" id="createAge" min="1" max="100" placeholder="Возраст" />
+    <label>Cache Mode</label>
+    <select id="createCacheMode">
+        <option value="NON_CACHE">NON_CACHE</option>
+        <option value="MANUAL">MANUAL</option>
+        <option value="SPRING">SPRING</option>
+    </select>
+    <button onclick="createUser()">Создать</button>
+</div>
+
+<!-- GET BY ID -->
+<div class="section">
+    <h3>Получить пользователя по ID (GET /users/{id})</h3>
+    <label>ID пользователя (Long)</label>
+    <input type="number" id="getUserId" placeholder="ID" />
+    <label>Cache Mode</label>
+    <select id="getCacheMode">
+        <option value="NON_CACHE">NON_CACHE</option>
+        <option value="MANUAL">MANUAL</option>
+        <option value="SPRING">SPRING</option>
+    </select>
+    <button onclick="getUserById()">Получить</button>
+</div>
+
+<!-- UPDATE -->
+<div class="section">
+    <h3>Обновить пользователя (PUT /users/{id})</h3>
+    <label>ID пользователя (Long)</label>
+    <input type="number" id="updateUserId" placeholder="ID" />
+    <label>Username</label>
+    <input type="text" id="updateUsername" placeholder="Username" />
+    <label>Surname</label>
+    <input type="text" id="updateSurname" placeholder="Фамилия" />
+    <label>Email</label>
+    <input type="email" id="updateEmail" placeholder="Email" />
+    <label>Age</label>
+    <input type="number" id="updateAge" min="1" max="100" placeholder="Возраст" />
+    <label>Cache Mode</label>
+    <select id="updateCacheMode">
+        <option value="NON_CACHE">NON_CACHE</option>
+        <option value="MANUAL">MANUAL</option>
+        <option value="SPRING">SPRING</option>
+    </select>
+    <button onclick="updateUser()">Обновить</button>
+</div>
+
+<!-- DELETE -->
+<div class="section">
+    <h3>Удалить пользователя (DELETE /users/{id})</h3>
+    <label>ID пользователя (Long)</label>
+    <input type="number" id="deleteUserId" placeholder="ID" />
+    <label>Cache Mode</label>
+    <select id="deleteCacheMode">
+        <option value="NON_CACHE">NON_CACHE</option>
+        <option value="MANUAL">MANUAL</option>
+        <option value="SPRING">SPRING</option>
+    </select>
+    <button onclick="deleteUser()">Удалить</button>
+</div>
+
+<!-- LIST ALL -->
+<div class="section">
+    <h3>Список всех пользователей (GET /users)</h3>
+    <button onclick="getAllUsers()">Получить список</button>
+</div>
+
+<h3>Ответ сервера</h3>
+<div id="response">Здесь появится ответ API</div>
+
+<script>
+    // ВАЖНО: укажи свой порт, если не 8080
+    const API_BASE = 'http://localhost:8080';
+    const CONTEXT_PATH = '/users';
+
+    function showResponse(data) {
+        const el = document.getElementById('response');
+        el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    }
+
+    async function request(method, path, body, params) {
+        // Собираем URL вручную: http://localhost:8080/users + путь
+        let url = `${API_BASE}${CONTEXT_PATH}${path}`;
+
+        // Добавляем query-параметры, если есть
+        if (params && Object.keys(params).length > 0) {
+            const qs = new URLSearchParams(params).toString();
+            url += '?' + qs;
+        }
+
+        const options = { method };
+        if (body) {
+            options.headers = { 'Content-Type': 'application/json' };
+            options.body = JSON.stringify(body);
+        }
+
+        try {
+            const res = await fetch(url, options);
+            const text = await res.text();
+            if (!res.ok) throw new Error(`HTTP ${res.status}: ${text}`);
+            return text ? JSON.parse(text) : null;
+        } catch (e) {
+            console.error(e);
+            showResponse(e.message);
+        }
+    }
+
+    async function createUser() {
+        const username = document.getElementById('createUsername').value.trim();
+        const surname = document.getElementById('createSurname').value.trim();
+        const email = document.getElementById('createEmail').value.trim();
+        const ageInput = document.getElementById('createAge').value.trim();
+        const cacheMode = document.getElementById('createCacheMode').value;
+
+        if (!username || !surname || !email || !ageInput) {
+            return alert('Заполните все обязательные поля (username, surname, email, age)');
+        }
+
+        const age = parseInt(ageInput, 10);
+        if (isNaN(age) || age < 1 || age > 100) {
+            return alert('Age должен быть числом от 1 до 100');
+        }
+
+        const dto = { username, surname, email, age };
+        const data = await request('POST', '', dto, { cacheMode });
+        if (data) showResponse(data);
+    }
+
+    async function getUserById() {
+        const idInput = document.getElementById('getUserId').value.trim();
+        const cacheMode = document.getElementById('getCacheMode').value;
+        if (!idInput) return alert('Укажите ID');
+
+        const id = parseInt(idInput, 10);
+        if (isNaN(id)) return alert('ID должен быть числом');
+
+        const data = await request('GET', `/${id}`, null, { cacheMode });
+        if (data) showResponse(data);
+    }
+
+    async function updateUser() {
+        const idInput = document.getElementById('updateUserId').value.trim();
+        const username = document.getElementById('updateUsername').value.trim();
+        const surname = document.getElementById('updateSurname').value.trim();
+        const email = document.getElementById('updateEmail').value.trim();
+        const ageInput = document.getElementById('updateAge').value.trim();
+        const cacheMode = document.getElementById('updateCacheMode').value;
+
+        if (!idInput) return alert('Укажите ID');
+        const id = parseInt(idInput, 10);
+        if (isNaN(id)) return alert('ID должен быть числом');
+
+        const dto = {};
+        if (username) dto.username = username;
+        if (surname) dto.surname = surname;
+        if (email) dto.email = email;
+        if (ageInput) {
+            const age = parseInt(ageInput, 10);
+            if (isNaN(age) || age < 1 || age > 100) {
+                return alert('Age должен быть числом от 1 до 100');
+            }
+            dto.age = age;
+        }
+
+        const data = await request('PUT', `/${id}`, dto, { cacheMode });
+        if (data) showResponse(data);
+    }
+
+    async function deleteUser() {
+        const idInput = document.getElementById('deleteUserId').value.trim();
+        const cacheMode = document.getElementById('deleteCacheMode').value;
+        if (!idInput) return alert('Укажите ID');
+
+        const id = parseInt(idInput, 10);
+        if (isNaN(id)) return alert('ID должен быть числом');
+
+        await request('DELETE', `/${id}`, null, { cacheMode });
+        showResponse('Пользователь удалён (или сервер вернул 204 No Content)');
+    }
+
+    async function getAllUsers() {
+        const data = await request('GET', '', null, {});
+        if (data) showResponse(data);
+    }
+</script>
+</body>
+</html>
